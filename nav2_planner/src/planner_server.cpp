@@ -280,6 +280,14 @@ bool PlannerServer::transformPosesToGlobalFrame(
   geometry_msgs::msg::PoseStamped & curr_start,
   geometry_msgs::msg::PoseStamped & curr_goal)
 {
+  RCLCPP_INFO(get_logger(), "planner_server.cpp transformPosesToGlobalFrame %s", curr_start.header.frame_id.c_str());  // map
+  RCLCPP_INFO(get_logger(), "planner_server.cpp transformPosesToGlobalFrame %s", curr_goal.header.frame_id.c_str());  // nothing ""
+  if (!costmap_ros_->transformPoseToGlobalFrame(curr_start, curr_start)) {  // this doesn't happen
+    RCLCPP_INFO(get_logger(), "start to start transform failed");
+  }
+  if (!costmap_ros_->transformPoseToGlobalFrame(curr_goal, curr_goal)) {  // this happens
+    RCLCPP_INFO(get_logger(), "goal to goal transform failed");
+  }
   if (!costmap_ros_->transformPoseToGlobalFrame(curr_start, curr_start) ||
     !costmap_ros_->transformPoseToGlobalFrame(curr_goal, curr_goal))
   {
@@ -361,7 +369,8 @@ PlannerServer::computePlanThroughPoses()
       }
       curr_goal = goal->goals[i];
 
-      // Transform them into the global frame
+      // Transform them into the global frame // this part doesn't happen
+      RCLCPP_INFO(get_logger(), "LINE 365 PLANNER_SERVER.CPP");
       if (!transformPosesToGlobalFrame(action_server_poses_, curr_start, curr_goal)) {
         return;
       }
@@ -431,7 +440,10 @@ PlannerServer::computePlan()
 
     // Transform them into the global frame
     geometry_msgs::msg::PoseStamped goal_pose = goal->goal;
+    RCLCPP_INFO(get_logger(), "LINE 434 PLANNER_SERVER.CPP");
+    RCLCPP_INFO(get_logger(), "computePlan after LINE 434 %s", goal_pose.header.frame_id.c_str());
     if (!transformPosesToGlobalFrame(action_server_pose_, start, goal_pose)) {
+      RCLCPP_INFO(get_logger(), "usually gets stuck here");
       return;
     }
 
